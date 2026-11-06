@@ -49,6 +49,12 @@ fun MovementsScreen(
     val sucursalSeleccionada = remember {
         mutableStateOf(DatosEjemplo.sucursales.first())
     }
+
+    val stockActual = DatosEjemplo.stocks.find {
+        it.productoId == productoSeleccionado.value.id &&
+                it.sucursalId == sucursalSeleccionada.value.id
+    }
+
     Column {
         AppTopBar(
             title = "Movimientos",
@@ -102,14 +108,7 @@ fun MovementsScreen(
                             Text(sucursal.nombre)
                         }
                     }
-
-                    val stockActual = DatosEjemplo.stocks.find {
-                        it.productoId == productoSeleccionado.value.id &&
-                                it.sucursalId == sucursalSeleccionada.value.id
-                    }
-
                     Text("Stock disponible: ${stockActual?.cantidad ?: "Sin registro"}")
-
 
                     Button(
                         enabled = stockActual != null,
@@ -125,7 +124,6 @@ fun MovementsScreen(
                     ) {
                         Text("Validar movimiento")
                     }
-                    Text("Validar movimiento")
                 }
                 if (mostrarConfirmacion.value) {
                     AlertDialog(
@@ -144,32 +142,43 @@ fun MovementsScreen(
                                         "Vista previa: aún no se guarda el movimiento."
                             )
                         },
+
                         confirmButton = {
                             TextButton(
                                 onClick = {
-                                    mostrarConfirmacion.value = false
+                                    val registrado = movementsViewModel.registrarMovimiento(
+                                        tipo = tipoSeleccionado.value,
+                                        productoId = productoSeleccionado.value.id,
+                                        sucursalId = sucursalSeleccionada.value.id,
+                                        stockDisponible = stockActual?.cantidad ?: 0
+                                    )
+
+                                    if (registrado) {
+                                        mostrarConfirmacion.value = false
+                                    }
                                 }
                             ) {
-                                Text("Entendido")
+                                Text("Confirmar movimiento")
                             }
                         }
                     )
                 }
+                Text("Movimientos registrados")
+
+                if (movementsViewModel.movimientos.isEmpty()) {
+                    Text("Todavía no hay movimientos registrados")
+                } else {
+                    movementsViewModel.movimientos.forEach { movimiento ->
+                        Text(
+                            "Tipo: ${movimiento.tipo}\n" +
+                                    "Cantidad: ${movimiento.cantidad}\n" +
+                                    "Producto: ${movimiento.productoId}\n" +
+                                    "Sucursal: ${movimiento.sucursalId}"
+                        )
+                    }
+                }
                 }
             }
 
-
-            OutlinedTextField(
-                value = movementsViewModel.cantidad,
-                onValueChange = movementsViewModel::cambiarCantidad,
-                label = { Text("Cantidad") }
-            )
-
-            if (movementsViewModel.mensajeError.isNotEmpty()) {
-                Text(
-                    text = movementsViewModel.mensajeError,
-                    color = MaterialTheme.colorScheme.error
-                )
-            }
         }
     }

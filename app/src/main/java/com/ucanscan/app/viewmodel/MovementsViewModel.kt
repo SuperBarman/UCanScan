@@ -6,6 +6,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.ucanscan.app.model.TipoMovimiento
+//Crea una lista que Compose puede observar cuando cambia.
+import androidx.compose.runtime.mutableStateListOf
+//Utiliza el modelo creado por Mario.
+import com.ucanscan.app.model.Movimiento
+
+//Genera un identificador único para cada movimiento.
+import java.util.UUID
+
 
 class MovementsViewModel : ViewModel() {
 
@@ -50,5 +58,36 @@ class MovementsViewModel : ViewModel() {
 
         return mensajeError.isEmpty()
     }
+    private val _movimientos = mutableStateListOf<Movimiento>()
 
+    val movimientos: List<Movimiento>
+        get() = _movimientos
+
+    fun registrarMovimiento(
+        tipo: TipoMovimiento,
+        productoId: String,
+        sucursalId: String,
+        stockDisponible: Int
+    ): Boolean {
+
+        if (!validarCantidad(tipo, stockDisponible)) {
+            return false
+        }
+
+        val numero = cantidad.toInt()
+
+        val movimiento = Movimiento(
+            id = UUID.randomUUID().toString(),
+            productoId = productoId,
+            sucursalId = sucursalId,
+            usuarioId = "OPERADOR_DEMO",
+            tipo = tipo,
+            cantidad = numero
+        )
+
+        _movimientos.add(movimiento)
+        cantidad = ""
+
+        return true
+    }
 }
