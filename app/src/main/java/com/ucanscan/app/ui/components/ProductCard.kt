@@ -21,7 +21,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Warning
 
 @Composable
-fun ProductCard(item: ProductoConStock){
+fun ProductCard(item: ProductoConStock, modifier: Modifier = Modifier){
     val colorEstado = when (item.estado){
         EstadoStock.DISPONIBLE -> Color.Green
         EstadoStock.BAJO_MINIMO -> Color.Yellow
@@ -33,7 +33,7 @@ fun ProductCard(item: ProductoConStock){
         EstadoStock.BAJO_MINIMO -> Icons.Default.Warning
         EstadoStock.AGOTADO -> Icons.Default.Close
     }
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(modifier = modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(text = item.producto.nombre,
                 style = MaterialTheme.typography.titleMedium)

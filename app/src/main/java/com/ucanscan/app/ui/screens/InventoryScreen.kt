@@ -16,6 +16,7 @@ import com.ucanscan.app.viewmodel.InventoryViewModel
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
+import androidx.compose.runtime.key
 import com.ucanscan.app.ui.components.AppButton
 import com.ucanscan.app.ui.components.AppTextField
 
@@ -57,8 +58,10 @@ fun InventoryScreen(
                 )
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    items(productos) { item ->
-                        ProductCard(item = item)
+                    items(productos, key = {it.producto.id }) { item ->
+                        ProductCard(
+                            item = item,
+                            modifier = Modifier.animateItem())
                     }
                 }
 
