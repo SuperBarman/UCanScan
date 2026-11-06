@@ -16,6 +16,7 @@ import com.ucanscan.app.viewmodel.InventoryViewModel
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
+import com.ucanscan.app.ui.components.AppButton
 import com.ucanscan.app.ui.components.AppTextField
 
 // componente
@@ -38,7 +39,7 @@ fun InventoryScreen(
                 viewModel.sucursales.forEach { sucursal ->
                     FilterChip(
                         selected = sucursal.id == viewModel.sucursalSeleccionadaId,
-                        onClick = { viewModel.cambiarSucursal(sucursal.id)},
+                        onClick = { viewModel.cambiarSucursal(sucursal.id) },
                         label = { Text(sucursal.nombre) }
                     )
                 }
@@ -48,10 +49,19 @@ fun InventoryScreen(
                 onValueChange = viewModel::cambiarBusqueda,
                 label = "Buscar por nombre o codigo"
             )
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                items(productos) { item ->
-                    ProductCard(item = item)
+            if (productos.isEmpty()) {
+                Text("No hay productos que coincidan con tu busqueda")
+                AppButton(
+                    text = "Limpiar Busqueda",
+                    onClick = viewModel::limpiarBusqueda
+                )
+            } else {
+                LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    items(productos) { item ->
+                        ProductCard(item = item)
+                    }
                 }
+
             }
 
         }
