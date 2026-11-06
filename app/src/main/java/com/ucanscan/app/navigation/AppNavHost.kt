@@ -1,14 +1,16 @@
 package com.ucanscan.app.navigation
 
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.ucanscan.app.model.RolUsuario
 import com.ucanscan.app.ui.screens.HomeScreen
 import com.ucanscan.app.ui.screens.LoginScreen
 import com.ucanscan.app.ui.screens.SectionScreen
+import com.ucanscan.app.ui.screens.ReportsScreen
+import com.ucanscan.app.ui.screens.ControlScreen
 
-// Nombres de las rutas
 object Routes {
     const val LOGIN = "login"
     const val HOME = "home"
@@ -24,15 +26,21 @@ fun AppNavHost() {
 
     val navController = rememberNavController()
 
+    // El rol se comparte entre el menu y la navegacion.
+    var rolActual by remember {
+        mutableStateOf(RolUsuario.OPERADOR)
+    }
+
     NavHost(
         navController = navController,
         startDestination = Routes.LOGIN
     ) {
 
-        // Pantalla de ingreso
         composable(Routes.LOGIN) {
             LoginScreen(
                 onEnter = {
+                    rolActual = RolUsuario.OPERADOR
+
                     navController.navigate(Routes.HOME) {
                         popUpTo(Routes.LOGIN) {
                             inclusive = true
@@ -42,13 +50,21 @@ fun AppNavHost() {
             )
         }
 
-        // Menu principal
         composable(Routes.HOME) {
             HomeScreen(
+                rolSeleccionado = rolActual,
+                onRoleChange = { nuevoRol ->
+                    rolActual = nuevoRol
+                },
                 onOpenSection = { ruta ->
-                    navController.navigate(ruta)
+                    // Comprobar permiso antes de navegar.
+                    if (puedeAcceder(rolActual, ruta)) {
+                        navController.navigate(ruta)
+                    }
                 },
                 onLogout = {
+                    rolActual = RolUsuario.OPERADOR
+
                     navController.navigate(Routes.LOGIN) {
                         popUpTo(Routes.HOME) {
                             inclusive = true
@@ -58,34 +74,55 @@ fun AppNavHost() {
             )
         }
 
-        // Pantallas provisionales
         composable(Routes.INVENTORY) {
-            SectionScreen("Inventario") {
-                navController.popBackStack()
-            }
+            SectionScreen(
+                title = "Inventario",
+                permitido = puedeAcceder(rolActual, Routes.INVENTORY),
+                onBack = { navController.popBackStack() }
+            )
         }
 
         composable(Routes.SCANNER) {
-            SectionScreen("Escaner") {
-                navController.popBackStack()
-            }
+            SectionScreen(
+                title = "Escaner",
+                permitido = puedeAcceder(rolActual, Routes.SCANNER),
+                onBack = { navController.popBackStack() }
+            )
         }
 
         composable(Routes.MOVEMENTS) {
-            SectionScreen("Movimientos") {
-                navController.popBackStack()
-            }
+            SectionScreen(
+                title = "Movimientos",
+                permitido = puedeAcceder(rolActual, Routes.MOVEMENTS),
+                onBack = { navController.popBackStack() }
+            )
         }
 
         composable(Routes.CONTROL) {
-            SectionScreen("Control y alertas") {
-                navController.popBackStack()
+            if (puedeAcceder(rolActual, Routes.CONTROL)) {
+                ControlScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            } else {
+                SectionScreen(
+                    title = "Control y alertas",
+                    permitido = false,
+                    onBack = { navController.popBackStack() }
+                )
             }
         }
 
         composable(Routes.REPORTS) {
-            SectionScreen("Reportes") {
-                navController.popBackStack()
+            if (puedeAcceder(rolActual, Routes.REPORTS)) {
+                ReportsScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            } else {
+                SectionScreen(
+                    title = "Reportes",
+                    permitido = false,
+                    onBack = { navController.popBackStack() }
+                )
             }
         }
     }

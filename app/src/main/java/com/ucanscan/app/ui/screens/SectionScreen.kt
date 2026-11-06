@@ -5,14 +5,23 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.ucanscan.app.ui.components.AppButton
+import com.ucanscan.app.ui.components.AppTopBar
 
 @Composable
 fun SectionScreen(
     title: String,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    permitido: Boolean = true
 ) {
-
-    Scaffold { padding ->
+    Scaffold(
+        topBar = {
+            AppTopBar(
+                title = if (permitido) title else "Acceso restringido",
+                onBack = onBack
+            )
+        }
+    ) { padding ->
 
         Column(
             modifier = Modifier
@@ -21,21 +30,18 @@ fun SectionScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.Center
         ) {
-
-            Text(
-                text = title,
-                style = MaterialTheme.typography.headlineMedium
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text("Funcionalidad pendiente de implementar.")
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(onClick = onBack) {
-                Text("Volver al inicio")
+            if (permitido) {
+                Text("Funcionalidad pendiente de implementar.")
+            } else {
+                Text("Tu perfil no tiene permiso para abrir $title.")
             }
+
+            Spacer(Modifier.height(24.dp))
+
+            AppButton(
+                text = "Volver al inicio",
+                onClick = onBack
+            )
         }
     }
 }
