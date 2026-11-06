@@ -12,7 +12,13 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ucanscan.app.data.DatosEjemplo
 import com.ucanscan.app.model.TipoMovimiento
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import com.ucanscan.app.ui.components.AppTopBar
+import com.ucanscan.app.ui.components.EvidenciaConteoPanel
 import com.ucanscan.app.viewmodel.MovementsViewModel
 import com.ucanscan.app.viewmodel.MovimientosRoomViewModel
 import com.ucanscan.app.viewmodel.StockRoomViewModel
@@ -92,6 +98,16 @@ fun MovementsScreen(
                 Text(movementsViewModel.mensajeError, color = MaterialTheme.colorScheme.error)
             }
             if (mensaje.isNotBlank()) Text(mensaje)
+
+            // Segunda funcion nativa: galeria / Photo Picker.
+            // Animacion visible cuando se selecciona CONTEO.
+            AnimatedVisibility(
+                visible = tipo.value == TipoMovimiento.CONTEO,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                EvidenciaConteoPanel()
+            }
 
             Button(
                 enabled = stockActual != null && !guardando,
