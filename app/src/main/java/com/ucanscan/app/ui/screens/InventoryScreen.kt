@@ -2,6 +2,7 @@ package com.ucanscan.app.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
@@ -13,6 +14,8 @@ import com.ucanscan.app.ui.components.AppTopBar
 import com.ucanscan.app.ui.components.ProductCard
 import com.ucanscan.app.viewmodel.InventoryViewModel
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Text
 import com.ucanscan.app.ui.components.AppTextField
 
 // componente
@@ -31,6 +34,15 @@ fun InventoryScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                viewModel.sucursales.forEach { sucursal ->
+                    FilterChip(
+                        selected = sucursal.id == viewModel.sucursalSeleccionadaId,
+                        onClick = { viewModel.cambiarSucursal(sucursal.id)},
+                        label = { Text(sucursal.nombre) }
+                    )
+                }
+            }
             AppTextField(
                 value = viewModel.busqueda,
                 onValueChange = viewModel::cambiarBusqueda,
