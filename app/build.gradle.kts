@@ -60,4 +60,5 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
     implementation(libs.compose.icon.extended)
+    implementation(libs.google.code.scanner)
 }

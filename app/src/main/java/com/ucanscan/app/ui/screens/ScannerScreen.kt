@@ -1,80 +1,61 @@
 package com.ucanscan.app.ui.screens
-// ============================================================
-// IMPORTACIONES - JETPACK COMPOSE
-// ============================================================
 
-// ORGANIZACIÓN VISUAL
-// Column organiza los elementos verticalmente.
-import androidx.compose.foundation.layout.Column
-
-// ELEMENTOS VISUALES
-// Text muestra texto en la pantalla de la aplicación.
-import androidx.compose.material3.Text
-
-// FUNCIONES DE INTERFAZ
-// @Composable permite crear funciones de interfaz gráfica.
-import androidx.compose.runtime.Composable
-
-//Crea un estado que, al cambiar, permite actualizar la interfaz
-import androidx.compose.runtime.mutableStateOf
-
-//Recuerda un valor durante las recomposiciones de la pantalla.
-import androidx.compose.runtime.remember
-
-// ============================================================
-// IMPORTACIONES - COMPONENTES DE UCANSCAN
-// ============================================================
-
-
-//
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
+import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.ucanscan.app.data.DatosEjemplo
-
-//usar botones
-import androidx.compose.material3.Button
-// BARRA SUPERIOR
-// AppTopBar reutiliza la barra superior creada por el equipo.
 import com.ucanscan.app.ui.components.AppTopBar
 
-//crea un campo de texto donde el usuario puede escribir
-import androidx.compose.material3.OutlinedTextField
-
-// ============================================================
-// PANTALLA DEL ESCÁNER
-// ============================================================
 @Composable
 fun ScannerScreen(onBack: () -> Unit) {
+    val contexto = LocalContext.current
+    var codigo by rememberSaveable { mutableStateOf("") }
+    var resultado by remember { mutableStateOf("Introduce un codigo o usa la camara.") }
 
-    val codigo = remember { mutableStateOf("") }
-    var productoEncontrado = remember { mutableStateOf<String?>(null) }
-    Column {
-        AppTopBar(
-            title = "Escáner",
-            onBack = onBack
-        )
-        Text("Aquí escanearemos los productos")
-        OutlinedTextField(
-            value = codigo.value,
-            onValueChange = {codigo.value = it},
-            label = { Text("Codigo del producto")}
-        )
-        Button(
-            onClick = {
-                val producto = DatosEjemplo.productos.find {
-                    it.codigoBarras.equals(codigo.value.trim(), ignoreCase = true)
-                }
+    fun buscar(valor: String) {
+        val encontrado = DatosEjemplo.productos.firstOrNull {
+            it.codigoBarras.equals(valor.trim(), ignoreCase = true)
+        }
+        resultado = if (encontrado == null) "No se encontro un producto con ese codigo."
+                    else "Producto encontrado: ${encontrado.nombre}"
+    }
 
-                productoEncontrado.value = producto?.nombre
-            }
+    Scaffold(topBar = { AppTopBar(title = "Escaner", onBack = onBack) }) { padding ->
+        Column(
+            modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text("Buscar producto")
-        }
+            Text("Escanear codigo de barras", style = MaterialTheme.typography.headlineSmall)
+            Button(
+                onClick = {
+                    GmsBarcodeScanning.getClient(contexto).startScan()
+                        .addOnSuccessListener { barcode ->
+                            val valor = barcode.rawValue.orEmpty()
+                            codigo = valor
+                            buscar(valor)
+                        }
+                        .addOnCanceledListener { resultado = "Escaneo cancelado." }
+                        .addOnFailureListener { error ->
+                            resultado = "No se pudo abrir la camara: ${error.message ?: "Revisa Google Play Services."}"
+                        }
+                }, modifier = Modifier.fillMaxWidth()
+            ) { Text("Abrir camara y escanear") }
 
-        // Mostrar resultado de la búsqueda
-        if (productoEncontrado.value != null) {
-            Text("Producto encontrado: ${productoEncontrado.value}")
-        } else {
-            Text("Todavía no hay un producto seleccionado")
+            OutlinedTextField(
+                value = codigo,
+                onValueChange = { codigo = it },
+                label = { Text("Codigo del producto") },
+                singleLine = true, modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedButton(onClick = { buscar(codigo) }, modifier = Modifier.fillMaxWidth()) {
+                Text("Buscar producto manualmente")
+            }
+            Text(resultado)
         }
-
-    } // Cierra Column
-} // Cierra ScannerScreen
+    }
+}

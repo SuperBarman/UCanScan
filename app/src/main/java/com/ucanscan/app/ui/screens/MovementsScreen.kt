@@ -1,184 +1,162 @@
-
 package com.ucanscan.app.ui.screens
 
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.material3.Button
-import com.ucanscan.app.model.TipoMovimiento
-import com.ucanscan.app.data.DatosEjemplo
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
-
-// ORGANIZACIÓN VISUAL
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-
-// COMPONENTES VISUALES
-import androidx.compose.material3.Text
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.runtime.Composable
-
-// VIEWMODEL
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.ucanscan.app.viewmodel.MovementsViewModel
-
-// COMPONENTES DE UCANSCAN
+import com.ucanscan.app.data.DatosEjemplo
+import com.ucanscan.app.model.TipoMovimiento
 import com.ucanscan.app.ui.components.AppTopBar
+import com.ucanscan.app.viewmodel.MovementsViewModel
+import com.ucanscan.app.viewmodel.MovimientosRoomViewModel
+import com.ucanscan.app.viewmodel.StockRoomViewModel
+import kotlinx.coroutines.launch
 
-// PANTALLA DE MOVIMIENTOS
 @Composable
 fun MovementsScreen(
     onBack: () -> Unit,
-    movementsViewModel: MovementsViewModel = viewModel()
+    movementsViewModel: MovementsViewModel = viewModel(),
+    stockRoomViewModel: StockRoomViewModel = viewModel(),
+    movimientosRoomViewModel: MovimientosRoomViewModel = viewModel()
 ) {
-    val tipoSeleccionado = remember {
-        mutableStateOf(TipoMovimiento.ENTRADA)
-    }
-    val mostrarConfirmacion = remember {
-        mutableStateOf(false)
-    }
-    val productoSeleccionado = remember {
-        mutableStateOf(DatosEjemplo.productos.first())
+    val stocks by stockRoomViewModel.stocks.collectAsState(initial = emptyList())
+    val movimientos by movimientosRoomViewModel.movimientos.collectAsState(initial = emptyList())
+    val scope = rememberCoroutineScope()
+    val tipo = remember { mutableStateOf(TipoMovimiento.ENTRADA) }
+    val producto = remember { mutableStateOf(DatosEjemplo.productos.first()) }
+    val sucursal = remember { mutableStateOf(DatosEjemplo.sucursales.first()) }
+    var confirmar by remember { mutableStateOf(false) }
+    var guardando by remember { mutableStateOf(false) }
+    var mensaje by remember { mutableStateOf("") }
+
+    val stockActual = stocks.firstOrNull {
+        it.productoId == producto.value.id && it.sucursalId == sucursal.value.id
     }
 
-    val sucursalSeleccionada = remember {
-        mutableStateOf(DatosEjemplo.sucursales.first())
-    }
-
-    val stockActual = DatosEjemplo.stocks.find {
-        it.productoId == productoSeleccionado.value.id &&
-                it.sucursalId == sucursalSeleccionada.value.id
-    }
-
-    Column {
-        AppTopBar(
-            title = "Movimientos",
-            onBack = onBack
-        )
-
+    Scaffold(topBar = { AppTopBar(title = "Movimientos", onBack = onBack) }) { padding ->
         Column(
-            modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+            modifier = Modifier.fillMaxSize().padding(padding)
+                .verticalScroll(rememberScrollState()).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            Text("Registrar movimiento", style = MaterialTheme.typography.headlineSmall)
+            Text("1. Tipo de movimiento", style = MaterialTheme.typography.titleMedium)
+            TipoMovimiento.entries.forEach { opcion ->
+                FilterChip(
+                    selected = tipo.value == opcion,
+                    onClick = { tipo.value = opcion; mensaje = "" },
+                    label = { Text(opcion.name) }, modifier = Modifier.fillMaxWidth()
+                )
+            }
 
-            Text("Registrar movimiento")
+            Text("2. Producto", style = MaterialTheme.typography.titleMedium)
+            DatosEjemplo.productos.forEach { opcion ->
+                FilterChip(
+                    selected = producto.value.id == opcion.id,
+                    onClick = { producto.value = opcion; mensaje = "" },
+                    label = { Text(opcion.nombre) }, modifier = Modifier.fillMaxWidth()
+                )
+            }
 
-            Text("Selecciona el tipo de movimiento")
+            Text("3. Sucursal", style = MaterialTheme.typography.titleMedium)
+            DatosEjemplo.sucursales.forEach { opcion ->
+                FilterChip(
+                    selected = sucursal.value.id == opcion.id,
+                    onClick = { sucursal.value = opcion; mensaje = "" },
+                    label = { Text(opcion.nombre) }, modifier = Modifier.fillMaxWidth()
+                )
+            }
 
-            TipoMovimiento.entries.forEach { tipo ->
-                Button(
-                    onClick = {
-                        tipoSeleccionado.value = tipo
-                    }
-                ) {
-                    Text(
-                        when (tipo) {
-                            TipoMovimiento.ENTRADA -> "Entrada"
-                            TipoMovimiento.SALIDA -> "Salida"
-                            TipoMovimiento.CONTEO -> "Conteo"
-                        }
-                    )
-
-                    Text("Selecciona un producto")
-
-                    DatosEjemplo.productos.forEach { producto ->
-                        Button(
-                            onClick = {
-                                productoSeleccionado.value = producto
-                            }
-                        ) {
-                            Text(producto.nombre)
-                        }
-                    }
-
-                    Text("Selecciona una sucursal")
-
-                    DatosEjemplo.sucursales.forEach { sucursal ->
-                        Button(
-                            onClick = {
-                                sucursalSeleccionada.value = sucursal
-                            }
-                        ) {
-                            Text(sucursal.nombre)
-                        }
-                    }
-                    Text("Stock disponible: ${stockActual?.cantidad ?: "Sin registro"}")
-
-                    Button(
-                        enabled = stockActual != null,
-                        onClick = {
-                            if (movementsViewModel.validarCantidad(
-                                    tipo = tipoSeleccionado.value,
-                                    stockDisponible = stockActual?.cantidad ?: 0
-                                )
-                            ) {
-                                mostrarConfirmacion.value = true
-                            }
-                        }
-                    ) {
-                        Text("Validar movimiento")
-                    }
-                }
-                if (mostrarConfirmacion.value) {
-                    AlertDialog(
-                        onDismissRequest = {
-                            mostrarConfirmacion.value = false
-                        },
-                        title = {
-                            Text("Movimiento validado")
-                        },
-                        text = {
-                            Text(
-                                "Tipo: ${tipoSeleccionado.value}\n" +
-                                        "Cantidad: ${movementsViewModel.cantidad}\n" +
-                                        "Producto: ${productoSeleccionado.value.nombre}\n" +
-                                        "Sucursal: ${sucursalSeleccionada.value.nombre}\n\n" +
-                                        "Vista previa: aún no se guarda el movimiento."
-                            )
-                        },
-
-                        confirmButton = {
-                            TextButton(
-                                onClick = {
-                                    val registrado = movementsViewModel.registrarMovimiento(
-                                        tipo = tipoSeleccionado.value,
-                                        productoId = productoSeleccionado.value.id,
-                                        sucursalId = sucursalSeleccionada.value.id,
-                                        stockDisponible = stockActual?.cantidad ?: 0
-                                    )
-
-                                    if (registrado) {
-                                        mostrarConfirmacion.value = false
-                                    }
-                                }
-                            ) {
-                                Text("Confirmar movimiento")
-                            }
-                        }
-                    )
-                }
-                Text("Movimientos registrados")
-
-                if (movementsViewModel.movimientos.isEmpty()) {
-                    Text("Todavía no hay movimientos registrados")
-                } else {
-                    movementsViewModel.movimientos.forEach { movimiento ->
-                        Text(
-                            "Tipo: ${movimiento.tipo}\n" +
-                                    "Cantidad: ${movimiento.cantidad}\n" +
-                                    "Producto: ${movimiento.productoId}\n" +
-                                    "Sucursal: ${movimiento.sucursalId}"
-                        )
-                    }
-                }
+            Card(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text("Stock disponible en Room", style = MaterialTheme.typography.titleMedium)
+                    Text(stockActual?.cantidad?.toString() ?: "Cargando / sin registro")
                 }
             }
 
+            Text("4. Cantidad", style = MaterialTheme.typography.titleMedium)
+            OutlinedTextField(
+                value = movementsViewModel.cantidad,
+                onValueChange = movementsViewModel::cambiarCantidad,
+                label = { Text(if (tipo.value == TipoMovimiento.CONTEO) "Cantidad contada" else "Unidades") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                singleLine = true, modifier = Modifier.fillMaxWidth()
+            )
+            if (movementsViewModel.mensajeError.isNotBlank()) {
+                Text(movementsViewModel.mensajeError, color = MaterialTheme.colorScheme.error)
+            }
+            if (mensaje.isNotBlank()) Text(mensaje)
+
+            Button(
+                enabled = stockActual != null && !guardando,
+                onClick = {
+                    if (movementsViewModel.validarCantidad(tipo.value, stockActual?.cantidad ?: 0)) {
+                        confirmar = true
+                    }
+                }, modifier = Modifier.fillMaxWidth()
+            ) { Text("Validar movimiento") }
+
+            Text("Movimientos guardados en Room", style = MaterialTheme.typography.titleLarge)
+            if (movimientos.isEmpty()) {
+                Text("Aun no hay movimientos persistentes.")
+            } else {
+                movimientos.take(10).forEach { mov ->
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text("${mov.tipo}: ${mov.cantidad} unidades")
+                            Text("${DatosEjemplo.productos.firstOrNull { it.id == mov.productoId }?.nombre ?: mov.productoId} - ${DatosEjemplo.sucursales.firstOrNull { it.id == mov.sucursalId }?.nombre ?: mov.sucursalId}")
+                            Text("Stock anterior: ${mov.stockAnterior} / nuevo: ${mov.stockNuevo}")
+                        }
+                    }
+                }
+            }
+        }
+
+        if (confirmar) {
+            AlertDialog(
+                onDismissRequest = { if (!guardando) confirmar = false },
+                title = { Text("Confirmar movimiento") },
+                text = {
+                    Text("${tipo.value} - ${producto.value.nombre} - ${sucursal.value.nombre}\nCantidad: ${movementsViewModel.cantidad}\nSe guardara en Room.")
+                },
+                confirmButton = {
+                    TextButton(enabled = !guardando, onClick = {
+                        val numero = movementsViewModel.cantidad.toIntOrNull()
+                        if (numero == null) {
+                            confirmar = false
+                            mensaje = "Cantidad no valida."
+                        } else {
+                            guardando = true
+                            scope.launch {
+                                try {
+                                    movimientosRoomViewModel.registrar(
+                                        tipo.value, producto.value.id, sucursal.value.id, numero
+                                    )
+                                    movementsViewModel.cambiarCantidad("")
+                                    mensaje = "Movimiento guardado y stock actualizado en Room."
+                                    confirmar = false
+                                } catch (e: Exception) {
+                                    mensaje = e.message ?: "No se pudo registrar el movimiento."
+                                    confirmar = false
+                                } finally {
+                                    guardando = false
+                                }
+                            }
+                        }
+                    }) { Text(if (guardando) "Guardando..." else "Confirmar") }
+                },
+                dismissButton = {
+                    TextButton(enabled = !guardando, onClick = { confirmar = false }) {
+                        Text("Cancelar")
+                    }
+                }
+            )
         }
     }
+}

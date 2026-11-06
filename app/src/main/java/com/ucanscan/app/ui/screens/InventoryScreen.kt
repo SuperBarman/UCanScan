@@ -7,12 +7,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ucanscan.app.ui.components.AppTopBar
 import com.ucanscan.app.ui.components.ProductCard
 import com.ucanscan.app.viewmodel.InventoryViewModel
+import com.ucanscan.app.viewmodel.StockRoomViewModel
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
@@ -26,9 +29,11 @@ import com.ucanscan.app.ui.theme.UCanScanTheme
 @Composable
 fun InventoryScreen(
     onBack: () -> Unit,
-    viewModel: InventoryViewModel = viewModel()
+    viewModel: InventoryViewModel = viewModel(),
+    stockRoomViewModel: StockRoomViewModel = viewModel()
 ) {
-    val productos = viewModel.productosFiltrados()
+    val stocksRoom by stockRoomViewModel.stocks.collectAsState(initial = emptyList())
+    val productos = viewModel.productosFiltrados(stocksRoom)
     Scaffold(
         topBar = { AppTopBar(title = "Inventario", onBack = onBack) }
     ) { padding ->
@@ -52,7 +57,9 @@ fun InventoryScreen(
                 onValueChange = viewModel::cambiarBusqueda,
                 label = "Buscar por nombre o codigo"
             )
-            if (productos.isEmpty()) {
+            if (stocksRoom.isEmpty()) {
+                Text("Cargando inventario desde Room...")
+            } else if (productos.isEmpty()) {
                 Text("No hay productos que coincidan con tu busqueda")
                 AppButton(
                     text = "Limpiar Busqueda",

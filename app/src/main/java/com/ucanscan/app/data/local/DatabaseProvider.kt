@@ -17,7 +17,7 @@ object DatabaseProvider {
                 context.applicationContext,
                 UCanScanDatabase::class.java,
                 "ucanscan_database"
-            ).build().also {
+            ).addMigrations(UCanScanMigrations.MIGRATION_1_2, UCanScanMigrations.MIGRATION_2_3).build().also {
                 database = it
             }
         }

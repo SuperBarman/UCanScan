@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.ucanscan.app.data.DatosEjemplo
 import com.ucanscan.app.model.ProductoConStock
+import com.ucanscan.app.data.local.StockEntity
 import com.ucanscan.app.repository.InventoryRepository
 
 
@@ -34,9 +35,9 @@ class InventoryViewModel : ViewModel() {
         busqueda = ""
     }
 
-    fun productosFiltrados(): List<ProductoConStock> {
+    fun productosFiltrados(stocksRoom: List<StockEntity>): List<ProductoConStock> {
         val texto = busqueda.trim()
-        return repositorio.productosConStock(sucursalSeleccionadaId)
+        return repositorio.productosConStock(sucursalSeleccionadaId, stocksRoom)
             .filter { item ->
                 texto.isEmpty() ||
                         item.producto.nombre.contains(texto, ignoreCase = true) ||

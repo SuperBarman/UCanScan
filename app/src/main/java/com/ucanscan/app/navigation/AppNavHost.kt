@@ -10,6 +10,9 @@ import com.ucanscan.app.ui.screens.LoginScreen
 import com.ucanscan.app.ui.screens.SectionScreen
 import com.ucanscan.app.ui.screens.ReportsScreen
 import com.ucanscan.app.ui.screens.ControlScreen
+import com.ucanscan.app.ui.screens.InventoryScreen
+import com.ucanscan.app.ui.screens.ScannerScreen
+import com.ucanscan.app.ui.screens.MovementsScreen
 
 object Routes {
     const val LOGIN = "login"
@@ -75,27 +78,45 @@ fun AppNavHost() {
         }
 
         composable(Routes.INVENTORY) {
-            SectionScreen(
-                title = "Inventario",
-                permitido = puedeAcceder(rolActual, Routes.INVENTORY),
-                onBack = { navController.popBackStack() }
-            )
+            if (puedeAcceder(rolActual, Routes.INVENTORY)) {
+                InventoryScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            } else {
+                SectionScreen(
+                    title = "Inventario",
+                    permitido = false,
+                    onBack = { navController.popBackStack() }
+                )
+            }
         }
 
         composable(Routes.SCANNER) {
-            SectionScreen(
-                title = "Escaner",
-                permitido = puedeAcceder(rolActual, Routes.SCANNER),
-                onBack = { navController.popBackStack() }
-            )
+            if (puedeAcceder(rolActual, Routes.SCANNER)) {
+                ScannerScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            } else {
+                SectionScreen(
+                    title = "Escaner",
+                    permitido = false,
+                    onBack = { navController.popBackStack() }
+                )
+            }
         }
 
         composable(Routes.MOVEMENTS) {
-            SectionScreen(
-                title = "Movimientos",
-                permitido = puedeAcceder(rolActual, Routes.MOVEMENTS),
-                onBack = { navController.popBackStack() }
-            )
+            if (puedeAcceder(rolActual, Routes.MOVEMENTS)) {
+                MovementsScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            } else {
+                SectionScreen(
+                    title = "Movimientos",
+                    permitido = false,
+                    onBack = { navController.popBackStack() }
+                )
+            }
         }
 
         composable(Routes.CONTROL) {

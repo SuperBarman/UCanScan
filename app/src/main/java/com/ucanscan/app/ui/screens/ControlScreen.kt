@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ucanscan.app.ui.components.AppTopBar
-import com.ucanscan.app.ui.components.HistorialPanel
+import com.ucanscan.app.ui.components.HistorialRoomPanel
 import com.ucanscan.app.viewmodel.ControlViewModel
 import com.ucanscan.app.viewmodel.StockRoomViewModel
 
@@ -126,11 +126,11 @@ fun ControlScreen(
             Spacer(Modifier.height(8.dp))
 
 
-            HistorialPanel()
+            HistorialRoomPanel()
 
             Text(
                 text = "Stock y alertas consultados desde Room. " +
-                    "Historial y discrepancias siguen con datos de prueba.",
+                    "Historial y discrepancias guardados en Room.",
                 style = MaterialTheme.typography.bodySmall
             )
         }
