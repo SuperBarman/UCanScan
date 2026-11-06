@@ -17,8 +17,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Text
 import androidx.compose.runtime.key
+import androidx.compose.ui.tooling.preview.Preview
 import com.ucanscan.app.ui.components.AppButton
 import com.ucanscan.app.ui.components.AppTextField
+import com.ucanscan.app.ui.theme.UCanScanTheme
 
 // componente
 @Composable
@@ -70,4 +72,10 @@ fun InventoryScreen(
         }
     }
 }
-
+@Preview(showBackground = true)
+@Composable
+fun InventoryScreenPreview(){
+    UCanScanTheme {
+        InventoryScreen(onBack = {})
+    }
+}
