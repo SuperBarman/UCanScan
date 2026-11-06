@@ -5,19 +5,25 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ucanscan.app.ui.components.AppTopBar
+import com.ucanscan.app.ui.components.HistorialPanel
 import com.ucanscan.app.viewmodel.ControlViewModel
+import com.ucanscan.app.viewmodel.StockRoomViewModel
 
 @Composable
 fun ControlScreen(
     onBack: () -> Unit,
-    controlViewModel: ControlViewModel = viewModel()
+    controlViewModel: ControlViewModel = viewModel(),
+    stockRoomViewModel: StockRoomViewModel = viewModel()
 ) {
-    val alertas = controlViewModel.alertas
+    val stocks by stockRoomViewModel.stocks.collectAsState(initial = emptyList())
+    val alertas = controlViewModel.obtenerAlertas(stocks)
 
     val opciones = listOf("Todas" to "TODAS") +
         controlViewModel.sucursales.map { sucursal ->
@@ -119,9 +125,12 @@ fun ControlScreen(
 
             Spacer(Modifier.height(8.dp))
 
+
+            HistorialPanel()
+
             Text(
-                text = "Informacion de demostracion. " +
-                    "Todavia no se conecta a Room.",
+                text = "Stock y alertas consultados desde Room. " +
+                    "Historial y discrepancias siguen con datos de prueba.",
                 style = MaterialTheme.typography.bodySmall
             )
         }

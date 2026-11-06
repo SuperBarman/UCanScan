@@ -5,19 +5,24 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ucanscan.app.ui.components.AppTopBar
 import com.ucanscan.app.viewmodel.ReportsViewModel
+import com.ucanscan.app.viewmodel.StockRoomViewModel
 
 @Composable
 fun ReportsScreen(
     onBack: () -> Unit,
-    reportsViewModel: ReportsViewModel = viewModel()
+    reportsViewModel: ReportsViewModel = viewModel(),
+    stockRoomViewModel: StockRoomViewModel = viewModel()
 ) {
-    val general = reportsViewModel.obtenerResumenGeneral()
-    val sucursales = reportsViewModel.obtenerResumenSucursales()
+    val stocks by stockRoomViewModel.stocks.collectAsState(initial = emptyList())
+    val general = reportsViewModel.obtenerResumenGeneral(stocks)
+    val sucursales = reportsViewModel.obtenerResumenSucursales(stocks)
 
     Scaffold(
         topBar = {
@@ -84,7 +89,7 @@ fun ReportsScreen(
             Spacer(Modifier.height(8.dp))
 
             Text(
-                text = "Reportes calculados con datos de prueba.",
+                text = "Stock desde Room; catalogo y sucursales de demostracion.",
                 style = MaterialTheme.typography.bodySmall
             )
         }

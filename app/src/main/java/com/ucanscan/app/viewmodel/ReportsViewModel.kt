@@ -2,6 +2,7 @@ package com.ucanscan.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.ucanscan.app.data.DatosEjemplo
+import com.ucanscan.app.data.local.StockEntity
 
 // Resumen de todas las tiendas.
 data class ResumenGeneral(
@@ -23,8 +24,8 @@ data class ResumenSucursal(
 class ReportsViewModel : ViewModel() {
 
     // Calcula el resumen de toda la empresa.
-    fun obtenerResumenGeneral(): ResumenGeneral {
-        val stocks = DatosEjemplo.stocks
+    fun obtenerResumenGeneral(stocksRoom: List<StockEntity>): ResumenGeneral {
+        val stocks = stocksRoom
 
         return ResumenGeneral(
             productos = DatosEjemplo.productos.size,
@@ -40,11 +41,11 @@ class ReportsViewModel : ViewModel() {
     }
 
     // Calcula los resultados de cada sucursal.
-    fun obtenerResumenSucursales(): List<ResumenSucursal> {
+    fun obtenerResumenSucursales(stocksRoom: List<StockEntity>): List<ResumenSucursal> {
 
         return DatosEjemplo.sucursales.map { sucursal ->
 
-            val stocks = DatosEjemplo.stocks.filter {
+            val stocks = stocksRoom.filter {
                 it.sucursalId == sucursal.id
             }
 

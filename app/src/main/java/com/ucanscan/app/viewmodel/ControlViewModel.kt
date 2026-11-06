@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.ucanscan.app.data.DatosEjemplo
+import com.ucanscan.app.data.local.StockEntity
 
 // Informacion que mostraremos en cada alerta.
 data class AlertaStock(
@@ -26,8 +27,7 @@ class ControlViewModel : ViewModel() {
     }
 
     // Obtiene los productos con stock bajo o agotado.
-    val alertas: List<AlertaStock>
-        get() = DatosEjemplo.stocks
+    fun obtenerAlertas(stocksRoom: List<StockEntity>): List<AlertaStock> = stocksRoom
             .filter { stock ->
                 val bajoMinimo = stock.cantidad <= stock.stockMinimo
 
