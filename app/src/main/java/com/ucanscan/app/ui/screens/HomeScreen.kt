@@ -5,17 +5,28 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.ucanscan.app.model.RolUsuario
 import com.ucanscan.app.navigation.Routes
+import com.ucanscan.app.navigation.puedeAcceder
+import com.ucanscan.app.ui.components.AppButton
+import com.ucanscan.app.ui.components.AppTopBar
 
 @Composable
 fun HomeScreen(
+    rolSeleccionado: RolUsuario,
+    onRoleChange: (RolUsuario) -> Unit,
     onOpenSection: (String) -> Unit,
     onLogout: () -> Unit
 ) {
+    val roles = listOf(
+        "Operador" to RolUsuario.OPERADOR,
+        "Encargado de bodega" to RolUsuario.ENCARGADO_BODEGA,
+        "Gerente" to RolUsuario.GERENTE
+    )
 
-    // Cada boton tiene un nombre y una ruta
     val secciones = listOf(
         "Inventario" to Routes.INVENTORY,
         "Escaner" to Routes.SCANNER,
@@ -24,7 +35,9 @@ fun HomeScreen(
         "Reportes" to Routes.REPORTS
     )
 
-    Scaffold { padding ->
+    Scaffold(
+        topBar = { AppTopBar(title = "UCanScan") }
+    ) { padding ->
 
         Column(
             modifier = Modifier
@@ -34,28 +47,50 @@ fun HomeScreen(
                 .padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-
             Text(
-                text = "UCanScan",
-                style = MaterialTheme.typography.headlineLarge
+                "Menu principal",
+                style = MaterialTheme.typography.headlineMedium
             )
 
-            Text("Menu principal")
+            Text("Escanea, registra y controla.")
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
 
-            // Crear un boton por cada seccion
-            secciones.forEach { (nombre, ruta) ->
+            Text(
+                "Seleccionar rol (demostracion)",
+                style = MaterialTheme.typography.titleMedium
+            )
 
-                Button(
-                    onClick = { onOpenSection(ruta) },
-                    modifier = Modifier.fillMaxWidth()
+            roles.forEach { (nombre, rol) ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
+                    RadioButton(
+                        selected = rolSeleccionado == rol,
+                        onClick = { onRoleChange(rol) }
+                    )
+
                     Text(nombre)
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
+
+            Text(
+                "Secciones disponibles",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            secciones.forEach { (nombre, ruta) ->
+                if (puedeAcceder(rolSeleccionado, ruta)) {
+                    AppButton(
+                        text = nombre,
+                        onClick = { onOpenSection(ruta) }
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(16.dp))
 
             OutlinedButton(
                 onClick = onLogout,
