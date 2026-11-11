@@ -20,6 +20,12 @@ import androidx.compose.runtime.mutableStateOf
 
 //Recuerda un valor durante las recomposiciones de la pantalla.
 import androidx.compose.runtime.remember
+// importaciones de animacion
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 
 // ============================================================
 // IMPORTACIONES - COMPONENTES DE UCANSCAN
@@ -70,11 +76,17 @@ fun ScannerScreen(onBack: () -> Unit) {
         }
 
         // Mostrar resultado de la búsqueda
-        if (productoEncontrado.value != null) {
-            Text("Producto encontrado: ${productoEncontrado.value}")
-        } else {
-            Text("Todavía no hay un producto seleccionado")
+
+        AnimatedVisibility(
+            visible = productoEncontrado.value != null,
+            enter = fadeIn() + expandVertically(),
+            exit = fadeOut() + shrinkVertically()
+        ) {
+            Text(
+                text = "Producto encontrado: ${productoEncontrado.value}"
+            )
         }
+
 
     } // Cierra Column
 } // Cierra ScannerScreen
