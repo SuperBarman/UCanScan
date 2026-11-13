@@ -24,9 +24,9 @@ fun HistorialRoomPanel(vm: MovimientosRoomViewModel = viewModel()) {
     fun producto(id: String) = DatosEjemplo.productos.firstOrNull { it.id == id }?.nombre ?: id
     fun sucursal(id: String) = DatosEjemplo.sucursales.firstOrNull { it.id == id }?.nombre ?: id
 
-    Text("Historial persistente de movimientos", style = MaterialTheme.typography.titleLarge)
+    Text("Historial de movimientos", style = MaterialTheme.typography.titleLarge)
     if (movimientos.isEmpty()) {
-        Text("Todavia no hay movimientos guardados en Room.")
+        Text("Todavia no hay movimientos registrados.")
     } else {
         movimientos.take(15).forEach { movimiento ->
             Card(modifier = Modifier.fillMaxWidth()) {

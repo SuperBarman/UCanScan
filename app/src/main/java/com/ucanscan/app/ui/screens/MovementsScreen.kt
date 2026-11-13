@@ -118,9 +118,9 @@ fun MovementsScreen(
                 }, modifier = Modifier.fillMaxWidth()
             ) { Text("Validar movimiento") }
 
-            Text("Movimientos guardados en Room", style = MaterialTheme.typography.titleLarge)
+            Text("Historial de Movimientos", style = MaterialTheme.typography.titleLarge)
             if (movimientos.isEmpty()) {
-                Text("Aun no hay movimientos persistentes.")
+                Text("Aun no hay movimientos registrados.")
             } else {
                 movimientos.take(10).forEach { mov ->
                     Card(modifier = Modifier.fillMaxWidth()) {

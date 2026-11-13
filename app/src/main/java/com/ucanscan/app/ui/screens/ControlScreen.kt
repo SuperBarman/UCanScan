@@ -128,11 +128,6 @@ fun ControlScreen(
 
             HistorialRoomPanel()
 
-            Text(
-                text = "Stock y alertas consultados desde Room. " +
-                    "Historial y discrepancias guardados en Room.",
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
+            }
     }
 }

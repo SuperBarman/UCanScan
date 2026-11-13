@@ -1,5 +1,9 @@
 package com.ucanscan.app.ui.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.layout.ContentScale
+import com.ucanscan.app.R
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -12,13 +16,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ucanscan.app.ui.components.AppButton
 import com.ucanscan.app.ui.components.AppTextField
 import com.ucanscan.app.viewmodel.LoginViewModel
+import androidx.compose.ui.graphics.Color
 
 @Composable
 fun LoginScreen(
     onEnter: () -> Unit,
     loginViewModel: LoginViewModel = viewModel()
 ) {
-    Scaffold { padding ->
+    Scaffold (containerColor = Color.White) { padding ->
 
         Column(
             modifier = Modifier
@@ -30,9 +35,11 @@ fun LoginScreen(
             verticalArrangement = Arrangement.Center
         ) {
 
-            Text(
-                text = "UCanScan",
-                style = MaterialTheme.typography.headlineLarge
+            Image(
+                painter = painterResource(R.drawable.ucanscan_logo),
+                contentDescription = "UCanScan",
+                modifier = Modifier.fillMaxWidth().height(160.dp),
+                contentScale = ContentScale.Fit
             )
 
             Spacer(Modifier.height(8.dp))
@@ -83,7 +90,7 @@ fun LoginScreen(
             Spacer(Modifier.height(16.dp))
 
             Text(
-                text = "Modo demostración: sin autenticación real.",
+                text = "Modo demostración.",
                 style = MaterialTheme.typography.bodySmall
             )
         }
